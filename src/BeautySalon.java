@@ -43,10 +43,24 @@ public class BeautySalon {
         double balance = scanner.nextDouble();
         scanner.nextLine();
 
-        User user = new User(name, balance);
+        System.out.print("Enter user type (1 for VIP Kazashka, 2 for Ordinary Kazashka): ");
+        int userType = scanner.nextInt();
+        scanner.nextLine(); // Consume newline left by nextInt()
+
+        User user;
+        if (userType == 1) {
+            user = new VIPKazashka(name, balance);
+            System.out.println("VIP Kazashka added successfully.");
+        } else {
+            user = new OrdinaryKazashka(name, balance);
+            System.out.println("Ordinary Kazashka added successfully.");
+        }
+
         users.add(user);
-        System.out.println("User added successfully.");
-    } // метод чтобы добавить клиента
+        //User user = new User(name, balance);
+        //users.add(user);
+        //System.out.println("User added successfully."); // метод чтобы добавить клиента
+    }
 
     public void bookProcedure(Scanner scanner) {
         if (users.isEmpty()) {
@@ -98,11 +112,19 @@ public class BeautySalon {
         System.out.print("Enter the time for the booking (format HH:mm): ");
         String time = scanner.nextLine();
 
+
+
+        if (selectedUser instanceof VIPKazashka) {
+            ((VIPKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+        }
+        else if (selectedUser instanceof OrdinaryKazashka) {
+            ((OrdinaryKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+        }
         Booking newBooking = new Booking(bookingHistory.size() + 1, selectedProcedure.getName(), date, time);
         bookingHistory.add(newBooking);
         selectedUser.addProcedure(selectedProcedure);
 
-        System.out.println("Booking successful for " + selectedUser.getName() + " for the procedure " + selectedProcedure.getName() + " on " + date + " at " + time);
+        //System.out.println("Booking successful for " + selectedUser.getName() + " for the procedure " + selectedProcedure.getName() + " on " + date + " at " + time);
     } // метод упрощает бронирование для клиента, он выбирает юзера, процедуру, вводит дату и время. запись сохраняется в истории
 
     public void cancelBooking(Scanner scanner) {

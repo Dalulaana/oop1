@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-public class User {
+public abstract class User {
     private String name;
     private double balance;
     private ArrayList<BeautyProcedure> takenProcedures; // переменные для хранения инфы о клиенте
@@ -17,5 +17,6 @@ public class User {
     public void setBalance(double balance) { this.balance = balance; } // геттеры и сеттеры
 
     public ArrayList<BeautyProcedure> getTakenProcedures() { return takenProcedures; }
-    public void addProcedure(BeautyProcedure procedure) { this.takenProcedures.add(procedure); }
-} // метод чтобы добавить процедуру в список процедур
+    public void addProcedure(BeautyProcedure procedure) { this.takenProcedures.add(procedure); } // метод чтобы добавить процедуру в список процедур
+    public abstract void bookProcedure(BeautyProcedure procedure, String date, String time);
+}
