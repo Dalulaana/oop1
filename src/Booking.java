@@ -22,4 +22,6 @@ public class Booking {
 
     public String getTime() { return time; }
     public void setTime(String time) { this.time = time; }
+    // добавила
+
 } // методы геттеры и сеттеры позволяют получать и устанавливать значения приватных полей, следуя принципам инкапсуляции

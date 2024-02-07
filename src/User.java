@@ -19,4 +19,5 @@ public abstract class User {
     public ArrayList<BeautyProcedure> getTakenProcedures() { return takenProcedures; }
     public void addProcedure(BeautyProcedure procedure) { this.takenProcedures.add(procedure); } // метод чтобы добавить процедуру в список процедур
     public abstract void bookProcedure(BeautyProcedure procedure, String date, String time);
+    public abstract void cancelBooking(Booking booking, BeautyProcedure procedure); // отмена записи
 }
