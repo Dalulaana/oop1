@@ -6,10 +6,13 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
-        try (Connection conn = new DatabaseConnection().connect()) {
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance(); //singleton
+
+        try (Connection conn = dbConnection.getConnection()) {
             BeautySalon salon = new BeautySalon();
-            salon.loadProceduresFromDatabase(conn);
+//            salon.loadProceduresFromDatabase(conn);
             salon.usersFromDatabase(conn);
+            salon.loadBookingsFromDatabase(conn);
             Scanner scanner = new Scanner(System.in);
             int choice;
             do {

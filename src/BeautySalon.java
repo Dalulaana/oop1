@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class BeautySalon {
     private ArrayList<User> users;
@@ -110,20 +111,20 @@ public class BeautySalon {
 //        procedures.add(procedure);
 //        System.out.println("Procedure added successfully.");
 //    } // метод для того чтобы добавить процедуру
-    public void loadProceduresFromDatabase(Connection conn) throws SQLException {
-        String sql = "SELECT * FROM BeautyProcedures";
-        procedures.clear(); // Clear current procedures
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                BeautyProcedure procedure = new BeautyProcedure(
-                        rs.getString("name"),
-                        rs.getDouble("price"),
-                        rs.getString("description"));
-                procedures.add(procedure); // Add procedure from database to ArrayList
-            }
-        }
-    }
+//    public void loadProceduresFromDatabase(Connection conn) throws SQLException {
+//        String sql = "SELECT * FROM BeautyProcedures";
+//        procedures.clear(); // Clear current procedures
+//        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            ResultSet rs = pstmt.executeQuery();
+//            while (rs.next()) {
+//                BeautyProcedure procedure = new BeautyProcedure(
+//                        rs.getString("name"),
+//                        rs.getDouble("price"),
+//                        rs.getString("description"));
+//                procedures.add(procedure); // добвляем в эррэй лист из бд
+//            }
+//        }
+//    }
 
     public void addUser(Connection conn, Scanner scanner) throws SQLException {
         System.out.print("Enter user name: ");
@@ -145,14 +146,14 @@ public class BeautySalon {
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
                 System.out.println("User added successfully.");
-                // added
+                // добавила
                 if (userType == 1) {
                     System.out.println("VIP Kazashka added successfully.");
                 }
                 else {
                     System.out.println("Ordinary Kazashka added successfully.");
                 }
-                // end of update
+                // конец
             } else {
                 System.out.println("User could not be added.");
             }
@@ -186,7 +187,7 @@ public class BeautySalon {
 //    }
     public void usersFromDatabase(Connection conn) throws SQLException {
         String sql = "SELECT * FROM Users";
-        users.clear(); // Clear current procedures
+        users.clear();
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -203,54 +204,111 @@ public class BeautySalon {
                             rs.getDouble("balance")
                     );
                 }
-                users.add(user); // Add procedure from database to ArrayList
+                users.add(user); // добавить юзеров в эррэй лист из бд
             }
         }
     }
 
     public void bookProcedure(Connection conn, Scanner scanner) throws SQLException {
-        if (users.isEmpty()) {
-            System.out.println("No users available to book a procedure.");
-            return;
+//        if (users.isEmpty()) {
+//            System.out.println("No users available to book a procedure.");
+//            return;
+//        }
+//        if (procedures.isEmpty()) {
+//            System.out.println("No beauty procedures available to book.");
+//            return;
+//        }
+
+        String usersQuery = "SELECT COUNT(*) AS userCount FROM Users";
+        try (Statement usersStatement = conn.createStatement();
+             ResultSet usersResult = usersStatement.executeQuery(usersQuery)) {
+            if (usersResult.next()) {
+                int userCount = usersResult.getInt("userCount");
+                if (userCount == 0) {
+                    System.out.println("No users available to book a procedure.");
+                    return;
+                }
+            }
         }
-        if (procedures.isEmpty()) {
-            System.out.println("No beauty procedures available to book.");
-            return;
+
+        // Check if Procedures table is empty
+        String proceduresQuery = "SELECT COUNT(*) AS procedureCount FROM BeautyProcedures";
+        try (Statement proceduresStatement = conn.createStatement();
+             ResultSet proceduresResult = proceduresStatement.executeQuery(proceduresQuery)) {
+            if (proceduresResult.next()) {
+                int procedureCount = proceduresResult.getInt("procedureCount");
+                if (procedureCount == 0) {
+                    System.out.println("No beauty procedures available to book.");
+                    return;
+                }
+            }
         }
 
         System.out.println("Select a user by name:");
-
-        for (User user : users) {
-            System.out.println(user.getName());
-        }
+//        for (User user : users) {
+//            System.out.println(user.getName());
+//        }
+//        String userName = scanner.nextLine();
+//        User selectedUser = null;
+//        for (User user : users) {
+//            if (user.getName().equalsIgnoreCase(userName)) {
+//                selectedUser = user;
+//                break;
+//            }
+//        }
+//        if (selectedUser == null) {
+//            System.out.println("User not found.");
+//            return;
+//        }
         String userName = scanner.nextLine();
-        User selectedUser = null;
-        for (User user : users) {
-            if (user.getName().equalsIgnoreCase(userName)) {
-                selectedUser = user;
-                break;
+        String userNamesQuery = "SELECT name, userType, balance FROM Users WHERE name = ?";
+        String userType;
+        double balance;
+        try (PreparedStatement userNamesStatement = conn.prepareStatement(userNamesQuery)) {
+            userNamesStatement.setString(1, userName);
+            try (ResultSet userNamesResult = userNamesStatement.executeQuery()) {
+                if (!userNamesResult.next()) {
+                    System.out.println("User not found.");
+                    return;
+                }
+                // added
+                userType = userNamesResult.getString("userType");
+                balance = userNamesResult.getDouble("balance");
             }
-        }
-        if (selectedUser == null) {
-            System.out.println("User not found.");
-            return;
         }
 
         System.out.println("Select a procedure by name:");
-        for (BeautyProcedure procedure : procedures) {
-            System.out.println(procedure.getName());
-        }
+//        for (BeautyProcedure procedure : procedures) {
+//            System.out.println(procedure.getName());
+//        }
+//        String procedureName = scanner.nextLine();
+//        BeautyProcedure selectedProcedure = null;
+//        for (BeautyProcedure procedure : procedures) {
+//            if (procedure.getName().equalsIgnoreCase(procedureName)) {
+//                selectedProcedure = procedure;
+//                break;
+//            }
+//        }
+//        if (selectedProcedure == null) {
+//            System.out.println("Procedure not found.");
+//            return;
+//        }
         String procedureName = scanner.nextLine();
-        BeautyProcedure selectedProcedure = null;
-        for (BeautyProcedure procedure : procedures) {
-            if (procedure.getName().equalsIgnoreCase(procedureName)) {
-                selectedProcedure = procedure;
-                break;
+        String procedureNamesQuery = "SELECT name, description, price FROM BeautyProcedures WHERE name = ?";
+        BeautyProcedure procedure;
+        try (PreparedStatement procedureNamesStatement = conn.prepareStatement(procedureNamesQuery)) {
+            procedureNamesStatement.setString(1, procedureName);
+            try (ResultSet procedureNamesResult = procedureNamesStatement.executeQuery()) {
+                if (procedureNamesResult.next()) {
+                    String procedureName1 = procedureNamesResult.getString("name");
+                    String description = procedureNamesResult.getString("description");
+                    double price = procedureNamesResult.getDouble("price");
+                    procedure = new BeautyProcedure.Builder(procedureName1, price).description(description).build();
+                } else {
+                    System.out.println("Procedure not found.");
+                    return;
+                }
             }
-        }
-        if (selectedProcedure == null) {
-            System.out.println("Procedure not found.");
-            return;
         }
 
         System.out.print("Enter the date for the booking (format MM/dd/yyyy): ");
@@ -258,22 +316,42 @@ public class BeautySalon {
         System.out.print("Enter the time for the booking (format HH:mm): ");
         String time = scanner.nextLine();
 
-        if (selectedUser instanceof VIPKazashka) {
-            ((VIPKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+//        if (selectedUser instanceof VIPKazashka) {
+//            ((VIPKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+//        }
+//        else if (selectedUser instanceof OrdinaryKazashka) {
+//            ((OrdinaryKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+//        }
+
+        if (userType.equals("VIP")) {
+            VIPKazashka vipUser = new VIPKazashka(userName, balance);
+            vipUser.bookProcedure(procedure, date, time);
         }
-        else if (selectedUser instanceof OrdinaryKazashka) {
-            ((OrdinaryKazashka) selectedUser).bookProcedure(selectedProcedure, date, time);
+        else if (userType.equals("Ordinary")) {
+            OrdinaryKazashka ordinaryUser = new OrdinaryKazashka(userName, balance);
+            ordinaryUser.bookProcedure(procedure, date, time);
+
+            String updateBalanceQuery = "UPDATE Users SET balance = balance - ? WHERE name = ?";
+            try (PreparedStatement updateBalanceStatement = conn.prepareStatement(updateBalanceQuery)) {
+                updateBalanceStatement.setDouble(1, procedure.getPrice());
+                updateBalanceStatement.setString(2, userName);
+                updateBalanceStatement.executeUpdate();
+            }
+        }
+        else {
+            System.out.println("Invalid user type.");
+            return;
         }
 
         int userId;
         String getUserIdSql = "SELECT id FROM Users WHERE name = ?";
         try (PreparedStatement getUserIdStmt = conn.prepareStatement(getUserIdSql)) {
-            getUserIdStmt.setString(1, selectedUser.getName());
+            getUserIdStmt.setString(1, userName);
             ResultSet rs = getUserIdStmt.executeQuery();
             if (rs.next()) {
                 userId = rs.getInt("id");
             } else {
-                System.out.println("Error: User ID not found for user " + selectedUser.getName());
+                System.out.println("Error: User ID not found for user " + userName);
                 return;
             }
         }
@@ -281,12 +359,12 @@ public class BeautySalon {
         int procedureId;
         String getProcedureIdSql = "SELECT id FROM BeautyProcedures WHERE name = ?";
         try (PreparedStatement getProcedureIdStmt = conn.prepareStatement(getProcedureIdSql)) {
-            getProcedureIdStmt.setString(1, selectedProcedure.getName());
+            getProcedureIdStmt.setString(1, procedureName);
             ResultSet rs = getProcedureIdStmt.executeQuery();
             if (rs.next()) {
                 procedureId = rs.getInt("id");
             } else {
-                System.out.println("Error: Procedure ID not found for procedure " + selectedProcedure.getName());
+                System.out.println("Error: Procedure ID not found for procedure " + procedureName);
                 return;
             }
         }
@@ -303,52 +381,128 @@ public class BeautySalon {
             return;
         }
 
-        Booking newBooking = new Booking(bookingHistory.size() + 1, selectedProcedure.getName(), date, time);
-        bookingHistory.add(newBooking);
-        selectedUser.addProcedure(selectedProcedure);
+//        Booking newBooking = new Booking(bookingHistory.size() + 1, selectedProcedure.getName(), date, time);
+//        bookingHistory.add(newBooking);
+//        selectedUser.addProcedure(selectedProcedure);
 
         //System.out.println("Booking successful for " + selectedUser.getName() + " for the procedure " + selectedProcedure.getName() + " on " + date + " at " + time);
     } // метод упрощает бронирование для клиента, он выбирает юзера, процедуру, вводит дату и время. запись сохраняется в истории
 
-    public void cancelBooking1(Connection conn, Scanner scanner) {
-        if (bookingHistory.isEmpty()) {
-            System.out.println("There are no bookings to cancel.");
-            return;
-        }
+    public void loadBookingsFromDatabase(Connection conn) throws SQLException {
+        String sql = "SELECT * FROM Bookings";
+        bookingHistory.clear(); // Clear current bookings
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                int userId = rs.getInt("userId");
+                String procedureId = rs.getString("procedureId");
+                String date = rs.getString("date");
+                String time = rs.getString("time");
 
-        System.out.println("Current bookings:");
-        for (Booking booking : bookingHistory) {
-            System.out.println("ID: " + booking.getId() + ", Procedure: " + booking.getProcedureName() + ", Date: " + booking.getDate() + ", Time: " + booking.getTime());
+                // Create a new Booking object
+                Booking newBooking = new Booking(userId, procedureId, date, time);
+                bookingHistory.add(newBooking); // Add the booking to the ArrayList
+            }
         }
+    }
+
+
+    public void cancelBooking1(Connection conn, Scanner scanner) throws SQLException {
+//        if (bookingHistory.isEmpty()) {
+//            System.out.println("There are no bookings to cancel.");
+//            return;
+//        }
+        String bookingQuery = "SELECT * FROM Bookings";
+        try (Statement bookingsStatement = conn.createStatement();
+             ResultSet bookingsResult = bookingsStatement.executeQuery(bookingQuery)) {
+            if (!bookingsResult.next()) {
+                System.out.println("There are no bookings available to cancel.");
+                return;
+            }
+            // added
+            System.out.println("Current bookings:");
+            do {
+                int bookingId = bookingsResult.getInt("id");
+                int userId = bookingsResult.getInt("userId");
+                int procedureId = bookingsResult.getInt("procedureId");
+                String date = bookingsResult.getString("date");
+                String time = bookingsResult.getString("time");
+
+                // Fetch name from Users table
+                String userNameQuery = "SELECT name FROM Users WHERE id = ?";
+                try (PreparedStatement userNameStatement = conn.prepareStatement(userNameQuery)) {
+                    userNameStatement.setInt(1, userId);
+                    ResultSet userResult = userNameStatement.executeQuery();
+                    String userName = userResult.next() ? userResult.getString("name") : "Unknown";
+
+                    // Fetch procedure name from BeautyProcedures table
+                    String procedureNameQuery = "SELECT name FROM BeautyProcedures WHERE id = ?";
+                    try (PreparedStatement procedureNameStatement = conn.prepareStatement(procedureNameQuery)) {
+                        procedureNameStatement.setInt(1, procedureId);
+                        ResultSet procedureResult = procedureNameStatement.executeQuery();
+                        String procedureName = procedureResult.next() ? procedureResult.getString("name") : "Unknown";
+
+                        System.out.println("ID: " + bookingId + ", User: " + userName + ", Procedure: " + procedureName + ", Date: " + date + ", Time: " + time);
+                    }
+                }
+            } while (bookingsResult.next());
+        }
+//        System.out.println("Current bookings:");
+//        for (Booking booking : bookingHistory) {
+//            System.out.println("ID: " + booking.getId() + ", Procedure: " + booking.getProcedureName() + ", Date: " + booking.getDate() + ", Time: " + booking.getTime());
+//        }
 
         System.out.print("Enter the ID of the booking to cancel: ");
         int bookingId = scanner.nextInt();
         scanner.nextLine();
 
-        boolean found = false;
-        Iterator<Booking> iterator = bookingHistory.iterator();
-        while (iterator.hasNext()) {
-            Booking booking = iterator.next();
-            if (booking.getId() == bookingId) {
-                found = true;
-                User selectedUser = getUserByName(booking.getProcedureName());
-                if (selectedUser instanceof VIPKazashka) {
-                    selectedUser.cancelBooking(booking, getProcedureByName(booking.getProcedureName()));
-                } else if (selectedUser instanceof OrdinaryKazashka) {
-                    selectedUser.cancelBooking(booking, getProcedureByName(booking.getProcedureName()));
-                }
-                else{
-                    System.out.println("hello");
-                }
-                iterator.remove();
-                // System.out.println("Booking with ID " + bookingId + " has been canceled.");
-                // found = true;
-                break;
-            }
-        }
+//        boolean found = false;
+//        Iterator<Booking> iterator = bookingHistory.iterator();
+//        while (iterator.hasNext()) {
+//            Booking booking = iterator.next();
+//            if (booking.getId() == bookingId) {
+//                found = true;
+//                User selectedUser = getUserByName(booking.getProcedureName());
+//                if (selectedUser instanceof VIPKazashka) {
+//                    selectedUser.cancelBooking(booking, getProcedureByName(booking.getProcedureName()));
+//                } else if (selectedUser instanceof OrdinaryKazashka) {
+//                    selectedUser.cancelBooking(booking, getProcedureByName(booking.getProcedureName()));
+//                }
+//                else{
+//                    System.out.println("hello");
+//                }
+//                iterator.remove();
+//                System.out.println("Booking with ID " + bookingId + " has been canceled.");
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        if (!found) {
+//            System.out.println("No booking found with ID " + bookingId);
+//        }
 
-        if (!found) {
-            System.out.println("No booking found with ID " + bookingId);
+        String selectBookingQuery = "SELECT * FROM Bookings WHERE id = ?";
+        double price = 0.0;
+        int userId = 0;
+        try (PreparedStatement selectBookingStatement = conn.prepareStatement(selectBookingQuery)) {
+            selectBookingStatement.setInt(1, bookingId);
+            ResultSet bookingResult = selectBookingStatement.executeQuery();
+            if (!bookingResult.next()) {
+                System.out.println("No booking found with ID " + bookingId);
+                return;
+            }
+            userId = bookingResult.getInt("userId");
+            int procedureId = bookingResult.getInt("procedureId");
+            // Fetch the price of the procedure
+            String getPriceQuery = "SELECT price FROM BeautyProcedures WHERE id = ?";
+            try (PreparedStatement getPriceStatement = conn.prepareStatement(getPriceQuery)) {
+                getPriceStatement.setInt(1, procedureId);
+                ResultSet priceResult = getPriceStatement.executeQuery();
+                if (priceResult.next()) {
+                    price = priceResult.getDouble("price");
+                }
+            }
         }
 
         String sql = "DELETE FROM Bookings WHERE id = ?";
@@ -357,31 +511,45 @@ public class BeautySalon {
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 System.out.println("Booking with ID " + bookingId + " has been canceled and removed from the database.");
-            } else {
+
+                String updateBalanceQuery = "UPDATE Users SET balance = balance + ? WHERE id = ? AND userType = 'Ordinary'";
+                try (PreparedStatement updateBalanceStatement = conn.prepareStatement(updateBalanceQuery)) {
+                    updateBalanceStatement.setDouble(1, price);
+                    updateBalanceStatement.setInt(2, userId);
+                    int balanceRowsAffected = updateBalanceStatement.executeUpdate();
+                    if (balanceRowsAffected > 0) {
+                        System.out.println("Refund of " + price + " added to balance for user.");
+                    } else {
+                        System.out.println("User is not of type 'Ordinary' or user not found.");
+                    }
+                }
+            }
+            else {
                 System.out.println("No booking found with ID " + bookingId);
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             System.out.println("Error deleting booking: " + e.getMessage());
         }
     } // отмена записи
 
-    private User getUserByName(String name) {
-        for (User user : users) {
-            for(int i = 0; i < user.getTakenProcedures().size(); i++){
-                if (user.getTakenProcedures().get(i) != null && user.getTakenProcedures().get(i).getName().equalsIgnoreCase(name)) {
-                    return user;
-                }
-            }
-        }
-        return null;
-    }
-
-    private BeautyProcedure getProcedureByName(String name) {
-        for (BeautyProcedure procedure : procedures) {
-            if (procedure.getName().equalsIgnoreCase(name)) {
-                return procedure;
-            }
-        }
-        return null;
-    }
+//    private User getUserByName(String name) {
+//        for (User user : users) {
+//            for(int i = 0; i < user.getTakenProcedures().size(); i++){
+//                if (user.getTakenProcedures().get(i) != null && user.getTakenProcedures().get(i).getName().equalsIgnoreCase(name)) {
+//                    return user;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private BeautyProcedure getProcedureByName(String name) {
+//        for (BeautyProcedure procedure : procedures) {
+//            if (procedure.getName().equalsIgnoreCase(name)) {
+//                return procedure;
+//            }
+//        }
+//        return null;
+//    }
 }
